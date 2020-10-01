@@ -22,6 +22,13 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        if capacity >= MIN_CAPACITY:
+            self.data = [None] * capacity
+            self.capacity = capacity
+        else:
+            [None]*capacity
+            MIN_CAPACITY
+
 
 
     def get_num_slots(self):
@@ -35,7 +42,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
+        return(self.data)
 
     def get_load_factor(self):
         """
@@ -55,6 +62,16 @@ class HashTable:
 
         # Your code here
 
+        hval = 0x811c9dc5
+        fnv_prime = 0x01000193
+
+        for char in key:
+            hval = hval  ^ ord(char) 
+            hval = (hval * fnv_prime) % self.capacity
+
+        return hval
+
+
 
     def djb2(self, key):
         """
@@ -63,6 +80,14 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
+        skey = str(key).encode()
+
+        hash = 5381
+        for char in skey:
+            hash = ((hash <<5 ) + hash) + char
+             #2**5 for 32-bit or hash << 5 is the same thing
+            hash &= 0xffffffff
+        return hash
 
 
     def hash_index(self, key):
@@ -82,6 +107,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        slot = HashTableEntry(key,value)
+        self.data[self.fnv1(key)] = slot
 
 
     def delete(self, key):
@@ -93,6 +120,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        self.put(key, None)
 
 
     def get(self, key):
@@ -104,6 +132,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.data[self.fnv1(key)].value
 
 
     def resize(self, new_capacity):
