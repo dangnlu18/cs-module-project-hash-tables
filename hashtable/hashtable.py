@@ -22,6 +22,7 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        self.count = 0
         if capacity >= MIN_CAPACITY:
             self.data = [None] * capacity
             self.capacity = capacity
@@ -42,7 +43,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        return(self.data)
+        return self.capacity
 
     def get_load_factor(self):
         """
@@ -51,6 +52,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.count / self.get_num_slots()
 
 
     def fnv1(self, key):
@@ -61,15 +63,16 @@ class HashTable:
         """
 
         # Your code here
+        prime = 1099511628211
+        basis = 14695981039346656037
 
-        hval = 0x811c9dc5
-        fnv_prime = 0x01000193
+        hash_id = basis
+        enc_key = key.encode()
 
-        for char in key:
-            hval = hval  ^ ord(char) 
-            hval = (hval * fnv_prime) % self.capacity
-
-        return hval
+        for byte in enc_key:
+            hash_id = hash_id * prime
+            hash_id = hash_id ^ prime
+        return hash_id
 
 
 
@@ -80,13 +83,10 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
-        skey = str(key).encode()
 
         hash = 5381
-        for char in skey:
-            hash = ((hash <<5 ) + hash) + char
-             #2**5 for 32-bit or hash << 5 is the same thing
-            hash &= 0xffffffff
+        for char in key:
+            hash = hash * 33 + ord(char)    
         return hash
 
 
@@ -107,8 +107,26 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        slot = HashTableEntry(key,value)
-        self.data[self.fnv1(key)] = slot
+        hash_index = self.hash_index(key)
+
+        slot = HashTableEntry(key, value)
+
+        if not self.data[hash_index]:
+            self.data[hash_index] = slot
+            self.count +=1
+        else:
+            curr_node = self.data[hash_index]
+            while curr_node.key != key and curr_node.next:
+                curr_node = curr_node.next
+                if curr_node.key ==key:
+                    curr_node.value = curr_node.value
+                else:
+                    curr_node.next = slot
+                    self.count +=1
+                    if self.get_load_factor() > 0.7:
+                        self.resize(self.capacity*2)
+
+
 
 
     def delete(self, key):
@@ -120,8 +138,32 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        self.put(key, None)
+        prev_head = None
+        hash_index = self.hash_index(key)
 
+        curr_node = self.data[hash_index]
+
+        if not curr_node:
+            print('does not exist')
+
+        elif not curr_node.next:
+            self.data[hash_index] = None
+            self.count -=1
+        
+        else:
+            prev_head
+        while curr_node.key != key and curr_node.next:
+            prev_head = curr_node
+            curr_node = curr_node.next 
+        if not curr_node.next:
+            prev_head.next = None
+            self.count -=1
+        else:
+            prev_head.next = curr_node.next
+            self.count -=1
+
+        if self.get_load_factor() < 0.2:
+            self.resize(self.capacity//2)
 
     def get(self, key):
         """
@@ -132,7 +174,19 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        return self.data[self.fnv1(key)].value
+        hash_index = self.hash_index(key)
+
+        if self.data[hash_index]:
+            curr_node = self.data[hash_index]
+            while curr_node.key is not key and curr_node.next:
+                curr_node = curr_node.next
+                
+            if not curr_node.next:
+                return curr_node
+            else:
+                return curr_node.value
+        else:
+            return None
 
 
     def resize(self, new_capacity):
@@ -143,6 +197,16 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        old = self.data
+        self.capacity = new_capacity
+        self.data = new_capacity * [None]
+
+        for node in old:
+            if node:
+                curr_node = node
+                while curr_node is True:
+                    self.put(curr_node.key, curr_node.value)
+                    curr_node = curr_node.next
 
 
 
