@@ -1,6 +1,15 @@
 def word_count(s):
     # Your code here
+    lower = s.lower()
+    words = lower.split(' ')
+    word_hash = {}
 
+    for word in words:
+        if word in word_hash:
+            word_hash[word] +=1
+        else:
+            word_hash.update({word: 1})
+    print(word_hash)
 
 
 if __name__ == "__main__":

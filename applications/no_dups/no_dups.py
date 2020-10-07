@@ -1,6 +1,23 @@
+from collections import OrderedDict
+
 def no_dups(s):
     # Your code here
+    s.lower()
+    words = s.split(' ')
+    word_hash = {}
+    result = ''
 
+    if len(s) ==0:
+        return ""
+
+    for word in words:
+        if word in word_hash:
+            word_hash[word] +=1
+        else:
+            word_hash[word] = 1
+            result = result + f'{word} '
+    
+    return result.strip() 
 
 
 if __name__ == "__main__":
